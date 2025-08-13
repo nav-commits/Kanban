@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -15,11 +15,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { KanbanColumn } from "./KanbanColumn";
-import { columns as initialColumns, teamMembers } from "@/data/kanban-data";
+import { teamMembers } from "@/data/kanban-data";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { TaskCard } from "./TaskCard";
-import type { KanbanData, Task } from "@/types/kanban";
 
 import Filter from "../assets/icons/filter.svg";
 import ArrowDownButton from "../assets/icons/arrow-down-button.svg";
@@ -30,12 +29,16 @@ import Plus from "../assets/icons/plus.svg";
 import FilterIcon from "../assets/icons/filter-button.svg";
 import Calender from "../assets/icons/calendar.svg";
 
+import { useKanbanStore } from "../lib/store";
+
 export const ProjectManagement: React.FC = () => {
-  const [kanbanData, setKanbanData] = useState<KanbanData>({
-    columns: initialColumns,
-  });
-  const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const kanbanData = useKanbanStore((state) => state.kanbanData);
+  const activeTask = useKanbanStore((state) => state.activeTask);
+  const sidebarOpen = useKanbanStore((state) => state.sidebarOpen);
+
+  const setKanbanData = useKanbanStore((state) => state.setKanbanData);
+  const setActiveTask = useKanbanStore((state) => state.setActiveTask);
+  const setSidebarOpen = useKanbanStore((state) => state.setSidebarOpen);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -52,22 +55,24 @@ export const ProjectManagement: React.FC = () => {
     const { active, over } = event;
     setActiveTask(null);
     if (!over || active.id === over.id) return;
+
     setKanbanData((prev) => {
-      const newColumns = prev.columns.map((col) => ({
-        ...col,
-        tasks: [...col.tasks],
-      }));
+      const newColumns = prev.columns.map((col) => ({ ...col, tasks: [...col.tasks] }));
       const sourceCol = newColumns.find((col) =>
         col.tasks.some((task) => task.id === active.id)
       );
       const targetCol = newColumns.find((col) => col.id === over.id);
-
+    
       if (!sourceCol || !targetCol) return prev;
+    
       const taskIndex = sourceCol.tasks.findIndex((t) => t.id === active.id);
       const [movedTask] = sourceCol.tasks.splice(taskIndex, 1);
       targetCol.tasks.push(movedTask);
+    
       return { columns: newColumns };
     });
+    
+    
   };
 
   return (
