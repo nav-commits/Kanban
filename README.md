@@ -23,7 +23,7 @@ This project is a **Kanban-style project management dashboard** built with **Nex
 
 ### 1. Clone the Repository
 ```bash
-git clone <https://github.com/nav-commits/Kanban>
+git clone https://github.com/nav-commits/Kanban.git
 cd kanban
 npm install
 npm run dev
